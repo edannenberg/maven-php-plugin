@@ -62,12 +62,12 @@ public final class PhpTest extends AbstractPhpMojo implements IPhpunitConfigurat
     /**
      * PHPUnit artifact id.
      */
-    private static final String PHP_UNIT_ARTIFACT_ID = "phpunit5";
+    private static final String PHP_UNIT_ARTIFACT_ID = "PHPUnit";
     
     /**
      * PHPUnit group id.
      */
-    private static final String PHP_UNIT_GROUP_ID = "org.phpunit";
+    private static final String PHP_UNIT_GROUP_ID = "de.phpunit";
     
     /**
      * Where the test results should be stored.
