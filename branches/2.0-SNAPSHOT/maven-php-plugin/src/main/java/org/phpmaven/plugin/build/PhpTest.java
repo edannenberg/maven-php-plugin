@@ -20,11 +20,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.codehaus.plexus.util.FileUtils;
@@ -48,6 +50,7 @@ import com.google.common.collect.Lists;
  * @goal test
  * @author Christian Wiedemann
  * @author Tobias Sarnowski
+ * @author Erik Dannenberg
  */
 public final class PhpTest extends AbstractPhpMojo implements IPhpunitConfigurationMojo {
     
@@ -56,6 +59,16 @@ public final class PhpTest extends AbstractPhpMojo implements IPhpunitConfigurat
      */
     public static final String IGNORING_TEST_FAILURES_TEXT = "Ignoring test failures.";
 
+    /**
+     * PHPUnit artifact id.
+     */
+    private static final String PHP_UNIT_ARTIFACT_ID = "phpunit5";
+    
+    /**
+     * PHPUnit group id.
+     */
+    private static final String PHP_UNIT_GROUP_ID = "org.phpunit";
+    
     /**
      * Where the test results should be stored.
      *
@@ -164,6 +177,13 @@ public final class PhpTest extends AbstractPhpMojo implements IPhpunitConfigurat
      */
     private String phpUnitArguments;
     
+    /**
+     * Set this to change the default phpunit.xml configuration path. (src/test/phpunit.xml)
+     * 
+     * @parameter expression="${phpUnitXmlConfigurationPath}" default-value="${project.basedir}/src/test/phpunit.xml"
+     */
+    private File phpUnitXmlConfigurationPath;
+    
     // end of properties for IPhpunitConfigurationMojo
      
     /**
@@ -171,6 +191,11 @@ public final class PhpTest extends AbstractPhpMojo implements IPhpunitConfigurat
      */
     private List<SurefireResult> surefireResults = Lists.newArrayList();
 
+    /**
+     * PHPUnit version.
+     */
+    private PhpUnitVersion phpUnitVersion;
+    
     public PhpTest() {
         super();
     }
@@ -183,6 +208,29 @@ public final class PhpTest extends AbstractPhpMojo implements IPhpunitConfigurat
         return this.resultFolder;
     }
     
+    /**
+     * Returns PhpUnit version as specified in project dependencies.
+     * 
+     * @return PhpUnitVersion.
+     * @throws MojoExecutionException 
+     */
+    public PhpUnitVersion getPhpUnitVersion() throws MojoExecutionException {
+        if (phpUnitVersion == null) {
+            final Set<Artifact> projectDeps = getProject().getDependencyArtifacts();
+            for (final Artifact dep : projectDeps) {
+                if (Artifact.SCOPE_TEST.equals(dep.getScope())) {
+                    if (PHP_UNIT_ARTIFACT_ID.equals(dep.getArtifactId()) && PHP_UNIT_GROUP_ID.equals(dep.getGroupId())) {
+                        phpUnitVersion = new PhpUnitVersion(dep.getVersion());
+                    }
+                }
+            }
+            if (phpUnitVersion == null) {
+                throw new MojoExecutionException("Error: Could not find dependency " + PHP_UNIT_GROUP_ID + ":" + PHP_UNIT_ARTIFACT_ID + " in scope test.");
+            }
+        }
+        return phpUnitVersion;
+    }
+
     // methods for IPhpunitConfigurationMojo
 
     /**
@@ -253,6 +301,7 @@ public final class PhpTest extends AbstractPhpMojo implements IPhpunitConfigurat
             throw new MojoExecutionException(
                     "Setting singleTestInvocation to true requires at least phpunitXmlResult to be set manually.");
         }
+        phpUnitVersion = getPhpUnitVersion();
         try {
             final Iterable<File> files = new TestHelper(this).getTestFiles();
     
@@ -457,9 +506,11 @@ public final class PhpTest extends AbstractPhpMojo implements IPhpunitConfigurat
         String command = getPhpHelper().defaultTestIncludePath(null);
 
         if (getPhpHelper().getPhpVersion() == PhpVersion.PHP5 || getPhpHelper().getPhpVersion() == PhpVersion.PHP6) {
-            command +=
-                " \"" + getTemporaryScriptFilename().getAbsolutePath() + "\""
-                    + " --log-junit \"" + this.phpunitXmlResult.getAbsolutePath() + "\"";
+            command += " \"" + getTemporaryScriptFilename().getAbsolutePath() + "\"";
+            if (phpUnitVersion.getMajor() >= 3 && phpUnitVersion.getMinor() >= 6 && phpUnitXmlConfigurationPath.exists()) {
+                command += " --configuration \"" + phpUnitXmlConfigurationPath + "\"";
+            }
+            command += " --log-junit \"" + this.phpunitXmlResult.getAbsolutePath() + "\"";
         } else {
             throw new PhpErrorException(
                 getTemporaryScriptFilename(),
@@ -494,9 +545,11 @@ public final class PhpTest extends AbstractPhpMojo implements IPhpunitConfigurat
         String command = getPhpHelper().defaultTestIncludePath(file);
 
         if (getPhpHelper().getPhpVersion() == PhpVersion.PHP5 || getPhpHelper().getPhpVersion() == PhpVersion.PHP6) {
-            command +=
-                " \"" + getTemporaryScriptFilename().getAbsolutePath() + "\""
-                    + " --log-junit \"" + xmlLog.getAbsolutePath() + "\"";
+            command += " \"" + getTemporaryScriptFilename().getAbsolutePath() + "\"";
+            if (phpUnitVersion.getMajor() >= 3 && phpUnitVersion.getMinor() >= 6 && phpUnitXmlConfigurationPath.exists()) {
+                command += " --configuration \"" + phpUnitXmlConfigurationPath + "\"";
+            }
+            command += " --log-junit \"" + xmlLog.getAbsolutePath() + "\"";
         } else {
             throw new PhpErrorException(
                 getTemporaryScriptFilename(),
