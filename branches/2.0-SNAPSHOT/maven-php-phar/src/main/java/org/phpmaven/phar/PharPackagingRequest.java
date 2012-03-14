@@ -63,7 +63,7 @@ public class PharPackagingRequest implements IPharPackagingRequest {
      */
     @Configuration(name = "packagePhpDirectoryTemplate", value =
             "\n$base = realpath('$:{pkgbasedir}');\n" +
-            "$ite = new RecursiveDirectoryIterator2($base);\n" +
+            "$ite = new RecursiveDirectoryIterator2($base, FilesystemIterator::SKIP_DOTS);\n" +
             "$len = strlen($base);\n" +
             "foreach (new RecursiveIteratorIterator($ite) as $filename=>$cur) {\n" +
             "  if (substr(realpath($filename), 0, $len) == $base) {\n" +
@@ -82,10 +82,7 @@ public class PharPackagingRequest implements IPharPackagingRequest {
     /**
      * The stub.
      */
-    @Configuration(name = "stub", value =
-            "<?php " +
-            "die('Unable to execute this phar'); " +
-            "__HALT_COMPILER(); ?>")
+    @Configuration(name = "stub", value = "die('Unable to execute this phar');")
     private String stub;
     
     /**
