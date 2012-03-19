@@ -39,13 +39,13 @@
                 <!-- enable doctrine dev mode -->
                 <doctrine.dev.mode>true</doctrine.dev.mode>
                 <!-- use maven supplied doctrine -->
-                <doctrine.directory>../php-deps</doctrine.directory>
-                <doctrine.db.driver>sqlite</doctrine.db.driver>
-                <!-- sqlite for dev, use relative path from app root -->
+                <doctrine.directory>../php-deps/pear</doctrine.directory>
+                <!-- sqlite for dev, use relative path from app root for db file-->
                 <doctrine.db.driver>sqlite</doctrine.db.driver>
                 <doctrine.db.path>../../myapp.sqlite</doctrine.db.path>
             </properties>
         </profile>
+
         <profile>
             <id>production</id>
             <activation>

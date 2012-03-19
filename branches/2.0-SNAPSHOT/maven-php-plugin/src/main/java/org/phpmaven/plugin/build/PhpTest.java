@@ -242,15 +242,7 @@ public final class PhpTest extends AbstractPhpMojo implements IPhpunitConfigurat
     
             // did we get a testing file?
             if (files.iterator().hasNext()) {
-                try {
-                    getPhpHelper().prepareTestDependencies(this.factory, this.getSession());
-                } catch (ComponentLookupException ex) {
-                    throw new MojoExecutionException(ex.getMessage(), ex);
-                } catch (ExpressionEvaluationException ex) {
-                    throw new MojoExecutionException(ex.getMessage(), ex);
-                } catch (PlexusConfigurationException ex) {
-                    throw new MojoExecutionException(ex.getMessage(), ex);
-                }
+                getPhpHelper().prepareTestDependencies(this.factory, this.getSession());
                 getLog().info(
                         "\n-------------------------------------------------------\n" +
                         "T E S T S\n" +

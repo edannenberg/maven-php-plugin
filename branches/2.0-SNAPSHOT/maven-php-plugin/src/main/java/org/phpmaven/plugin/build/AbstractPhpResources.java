@@ -155,15 +155,7 @@ public abstract class AbstractPhpResources extends AbstractPhpMojo {
         try {
             // TODO Is this correct?!?
             if (!isIgnoreValidate()) {
-                try {
-                    this.getPhpHelper().prepareCompileDependencies(this.factory, this.getSession());
-                } catch (ComponentLookupException ex) {
-                    throw new MojoExecutionException(ex.getMessage(), ex);
-                } catch (ExpressionEvaluationException ex) {
-                    throw new MojoExecutionException(ex.getMessage(), ex);
-                } catch (PlexusConfigurationException ex) {
-                    throw new MojoExecutionException(ex.getMessage(), ex);
-                }
+                this.getPhpHelper().prepareCompileDependencies(this.factory, this.getSession());
             }
             getLog().info("Copying php files");
             new PhpWalkHelper(this).goRecursiveAndCall(this.getSourceFolder());
