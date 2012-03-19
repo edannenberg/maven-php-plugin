@@ -184,8 +184,7 @@ public class PhpUnitCoverage extends AbstractApiDocReport implements IPhpunitCon
             
             // did we get any test file?
             if (files.iterator().hasNext()) {
-                getPhpHelper().prepareTestDependencies(this.factory, this.getSession());
-                
+               
                 final IPhpunitConfiguration config = this.factory.lookup(
                         IPhpunitConfiguration.class,
                         IComponentFactory.EMPTY_CONFIG,
