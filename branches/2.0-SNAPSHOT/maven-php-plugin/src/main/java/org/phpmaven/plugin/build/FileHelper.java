@@ -289,6 +289,8 @@ public final class FileHelper {
         if (zipEntry.isDirectory()) {
             destFile.mkdir();
             return;
+        } else {
+            destFile.getParentFile().mkdirs();
         }
 
         OutputStream out = null;
